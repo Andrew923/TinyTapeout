@@ -13,33 +13,23 @@ project:
 #
 # This info will be automatically collected and used to make a datasheet for the chip.
 documentation: 
-  author:       "PLACEHOLDER"      # Your name
-  discord:      ""      # Your discord handle
-  title:        "PLACEHOLDER"      # Project title
-  description:  "PLACEHOLDER"      # Short description of what your project does
-  how_it_works: "PLACEHOLDER"      # Longer description of how the project works
-  how_to_test:  "PLACEHOLDER"      # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
-  external_hw:  "PLACEHOLDER"      # Describe any external hardware needed
-  language:     "verilog" # other examples include Verilog, Amaranth, VHDL, etc
+  author:       "Andrew Yu"
+  discord:      ""
+  title:        "Soft Body Physics Simulator"
+  description:  "Based on accelerometer readings, simulates physics of a soft-body object and displays on WS2812 matrix"
+  how_it_works: "Takes in input from an accelerometer through SPI communication. These external forces drive the internnal representation of a few particles connected by spring forces. THe output is driven to an LED matrix using the WS2812 protocol."
+  how_to_test:  "Run CocoTB tests. Many are simply for viewing waveforms. Test on FPGA for full integration."
+  external_hw:  "Requires an ISM330DHCX imu and 16x16 WS2812 LED matrix"
+  language:     "verilog"
   doc_link:     ""      # URL to longer form documentation, eg the README.md in your repository
   clock_hz:     1000       # Clock frequency in Hz (if required)
   picture:      ""      # relative path to a picture in your repository
   inputs:               # a description of what the inputs do
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
+    - SDO
+    - rst
   outputs:
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
+    - led_data 
+    - SDI
+    - SPC
+    - CS
 
