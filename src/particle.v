@@ -450,8 +450,8 @@ module center (
 		m = MASS;
 		vel_x = vx;
 		vel_y = vy;
-		imu_x = sv2v_cast_16_signed($signed(data[47-:16])) >>> 10;
-		imu_y = sv2v_cast_16_signed($signed(data[31-:16])) >>> 10;
+		imu_x = sv2v_cast_16_signed($signed(data[47-:16])) >>> 7;
+		imu_y = sv2v_cast_16_signed($signed(data[31-:16])) >>> 7;
 	end
 	always @(posedge clk)
 		if (reset) begin

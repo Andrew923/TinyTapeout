@@ -28,7 +28,7 @@ module ChipInterface (
 	reg reset;
 	wire locked;
 	reg clk10;
-	data_t data;
+	wire [95:0] data;
 	wire [255:0] matrix;
 	ws2812 led_module(
 		.clock(clk),
@@ -63,8 +63,8 @@ module ChipInterface (
 		.matrix(matrix)
 	);
 	always @(*) begin
-		led[7:4] = data.x[15:12];
-		led[3:0] = data.y[15:12];
+		led[7:4] = data[47:44];
+		led[3:0] = data[31:28];
 		reset = rst;
 	end
 endmodule
