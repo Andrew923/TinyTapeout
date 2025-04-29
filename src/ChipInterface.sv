@@ -1,7 +1,7 @@
 `default_nettype none
 
 // debug macro since pll doesn't work well with cocotb
-// `define DEBUG
+`define DEBUG
 
 module ChipInterface
   (output logic led_data,
