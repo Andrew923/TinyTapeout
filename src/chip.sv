@@ -12,7 +12,7 @@ module my_chip (
     logic [7:0] led;
     logic [3:0] btn;
     
-    ChipInterface interface(io_out[0],
+    ChipInterface internals(io_out[0],
                             led,
                             io_out[1],
                             io_out[2],
