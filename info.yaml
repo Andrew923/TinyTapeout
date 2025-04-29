@@ -4,6 +4,14 @@ project:
     - toplevel_chip.v
     - chip.sv
     - decoder.v
+    - ChipInterface.v
+    - imu_multi.v
+    - library.v
+    - particle.v
+    - physics.v
+    - pll.v
+    - spi.v
+    - ws2812.v
   top_module:  "toplevel_chip"
 
 # As everyone will have access to all designs, try to make it easy for someone new to your design to know what
@@ -22,9 +30,9 @@ documentation:
   external_hw:  "Requires an ISM330DHCX imu and 16x16 WS2812 LED matrix"
   language:     "verilog"
   doc_link:     ""      # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     1000       # Clock frequency in Hz (if required)
+  clock_hz:     20_000_000
   picture:      ""      # relative path to a picture in your repository
-  inputs:               # a description of what the inputs do
+  inputs:
     - SDO
     - rst
   outputs:

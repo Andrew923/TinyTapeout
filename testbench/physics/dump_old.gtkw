@@ -1,0 +1,57 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Apr 22 18:52:44 2025
+[*]
+[dumpfile] "C:\Users\Andre\Downloads\18224\Project\tests\physics\dump.vcd"
+[dumpfile_mtime] "Tue Apr 22 18:47:38 2025"
+[dumpfile_size] 44472350
+[savefile] "C:\Users\Andre\Downloads\18224\Project\tests\physics\dump_old.gtkw"
+[timestart] 73912400
+[size] 1280 705
+[pos] -1 -1
+*-15.000000 73980000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] physics.
+[sst_width] 246
+[signals_width] 188
+[sst_expanded] 1
+[sst_vpaned_height] 195
+@29
+physics.clk
+@23
+physics.center.x[15:0]
+physics.center.y[15:0]
+physics.center.vx[15:0]
+physics.center.vy[15:0]
+physics.center.ax[15:0]
+physics.center.ay[15:0]
+@201
+-
+@23
+physics.peripheral0.x[15:0]
+physics.peripheral0.y[15:0]
+physics.peripheral0.vx[15:0]
+physics.peripheral0.vy[15:0]
+physics.peripheral0.ax[15:0]
+physics.peripheral0.ay[15:0]
+physics.peripheral0.displace0[15:0]
+physics.peripheral0.damp0[15:0]
+@201
+-
+@23
+physics.peripheral1.x[15:0]
+physics.peripheral1.y[15:0]
+physics.peripheral1.vx[15:0]
+physics.peripheral1.vy[15:0]
+physics.peripheral1.ax[15:0]
+physics.peripheral1.ay[15:0]
+@201
+-
+@23
+physics.peripheral2.x[15:0]
+physics.peripheral2.y[15:0]
+physics.peripheral2.vx[15:0]
+physics.peripheral2.vy[15:0]
+physics.peripheral2.ax[15:0]
+physics.peripheral2.ay[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
