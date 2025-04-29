@@ -12,15 +12,14 @@ module my_chip (
     logic [7:0] led;
     logic [3:0] btn;
     
-    ChipInterface interface
-        (io_out[0],
-         led,
-         io_out[1],
-         io_out[2],
-         io_out[3],
-         io_in[0],
-         btn[0], btn[1],
-         btn[2], btn[3],
-         reset, clock);
+    ChipInterface interface(io_out[0],
+                            led,
+                            io_out[1],
+                            io_out[2],
+                            io_out[3],
+                            io_in[0],
+                            btn[0], btn[1],
+                            btn[2], btn[3],
+                            reset, clock);
 
 endmodule
