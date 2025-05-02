@@ -42,7 +42,7 @@ module particle (
 	input wire signed [15:0] y2;
 	input wire signed [15:0] vx2;
 	input wire signed [15:0] vy2;
-	input data_t data;
+	input wire [95:0] data;
 	input wire clk;
 	input wire reset;
 	output reg signed [15:0] x;
@@ -100,10 +100,10 @@ module particle (
 	parameter TOTAL_CYCLES = 300000;
 	wire [$clog2(TOTAL_CYCLES + 1):0] idx;
 	wire clear;
-	Counter #($clog2(TOTAL_CYCLES + 1) + 1) counter(
-		clk,
-		clear,
-		idx
+	Counter #(.WIDTH($clog2(TOTAL_CYCLES + 1) + 1)) counter(
+		.clock(clk),
+		.clear(clear),
+		.Q(idx)
 	);
 	assign clear = reset;
 	always @(*) begin
@@ -362,7 +362,7 @@ module center (
 	input wire signed [15:0] y2;
 	input wire signed [15:0] vx2;
 	input wire signed [15:0] vy2;
-	input data_t data;
+	input wire [95:0] data;
 	input wire clk;
 	input wire reset;
 	output reg signed [15:0] x;
@@ -385,10 +385,10 @@ module center (
 	parameter TOTAL_CYCLES = 300000;
 	wire [$clog2(TOTAL_CYCLES + 1):0] idx;
 	wire clear;
-	Counter #($clog2(TOTAL_CYCLES + 1) + 1) counter(
-		clk,
-		clear,
-		idx
+	Counter #(.WIDTH($clog2(TOTAL_CYCLES + 1) + 1)) counter(
+		.clock(clk),
+		.clear(clear),
+		.Q(idx)
 	);
 	assign clear = reset;
 	function automatic signed [15:0] sv2v_cast_16_signed;
@@ -400,8 +400,8 @@ module center (
 		y = py;
 		vel_x = vx;
 		vel_y = vy;
-		imu_x = sv2v_cast_16_signed(data.x);
-		imu_y = sv2v_cast_16_signed(data.y);
+		imu_x = sv2v_cast_16_signed($signed(data[47-:16]));
+		imu_y = sv2v_cast_16_signed($signed(data[31-:16]));
 	end
 	always @(posedge clk)
 		if (reset) begin
