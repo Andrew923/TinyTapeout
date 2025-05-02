@@ -10,4 +10,4 @@ Included are pictures and videos of:
 my IMU data in binary in white pixels, still not really sure how it became blue
 - routing algorithm taking over 30 minutes
 - partial demo with peripheral particles flashing around and freaking out
-- final demo where i move around a blob
+- final demo where i move around a blob and it somehow works right before the deadline!
