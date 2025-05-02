@@ -28,79 +28,97 @@ module physics(
   logic next_matrix[15:0][15:0];
 
   // particle attributes
-  shortint cx, cy, cm, cvx, cvy;
-  shortint p0x, p0y, p0m, p0vx, p0vy;
-  shortint p1x, p1y, p1m, p1vx, p1vy;
-  shortint p2x, p2y, p2m, p2vx, p2vy;
+  shortint cx, cy, cvx, cvy;
+  shortint p0x, p0y, p0vx, p0vy;
+  shortint p1x, p1y, p1vx, p1vy;
+  shortint p2x, p2y, p2vx, p2vy;
 
   // center particle with 3 peripheral
-  particle #(
+  center #(
     .MASS(16),
     .INIT_X(8*16),
     .INIT_Y(8*16),
     .PHASE_OFFSET(0)
   ) center(
-    p0x, p0y, p0m, p0vx, p0vy,
-    p1x, p1y, p1m, p1vx, p1vy,
-    p2x, p2y, p2m, p2vx, p2vy,
+    p0x, p0y, p0vx, p0vy,
+    p1x, p1y, p1vx, p1vy,
+    p2x, p2y, p2vx, p2vy,
     data,
     clk,
     reset,
-    cx, cy, cm, cvx, cvy    
+    cx, cy, cvx, cvy    
   );
 
   particle #(
     .MASS(8),
+    .M0(16),
+    .M1(8),
+    .M2(8),
     .INIT_X(8*16),
     .INIT_Y(6*16),
-    .REST0(((4*16))),
-    .REST1(((20*16))), // 71 = 4.47 * 16
-    .REST2(((20*16))),
+    // .REST0(((4*16))),
+    // .REST1(((10*16))), // 71 = 4.47 * 16
+    // .REST2(((10*16))),
+    .REST0(0),
+    .REST1(0),
+    .REST2(0),
     .PHASE_OFFSET(100)
   ) peripheral0(
-    cx, cy, cm, cvx, cvy,    
-    p1x, p1y, p1m, p1vx, p1vy,
-    p2x, p2y, p2m, p2vx, p2vy,
+    cx, cy, cvx, cvy,    
+    p1x, p1y, p1vx, p1vy,
+    p2x, p2y, p2vx, p2vy,
     data,
     clk,
     reset,
-    p0x, p0y, p0m, p0vx, p0vy
+    p0x, p0y, p0vx, p0vy
   );
 
   particle #(
     .MASS(8),
+    .M0(8),
+    .M1(16),
+    .M2(8),
     .INIT_X(6*16),
     .INIT_Y(10*16),
-    .REST0(((20*16))),
-    .REST1(((8*16))),
-    .REST2(((16*16))),
+    // .REST0(((10*16))),
+    // .REST1(((8*16))),
+    // .REST2(((10*16))),
+    .REST0(0),
+    .REST1(0),
+    .REST2(0),
     .PHASE_OFFSET(200)
   ) peripheral1(
-    p0x, p0y, p0m, p0vx, p0vy,
-    cx, cy, cm, cvx, cvy,    
-    p2x, p2y, p2m, p2vx, p2vy,
+    p0x, p0y, p0vx, p0vy,
+    cx, cy, cvx, cvy,    
+    p2x, p2y, p2vx, p2vy,
     data,
     clk,
     reset,
-    p1x, p1y, p1m, p1vx, p1vy
+    p1x, p1y, p1vx, p1vy
   );
 
   particle #(
     .MASS(8),
+    .M0(8),
+    .M1(8),
+    .M2(16),
     .INIT_X(10*16),
     .INIT_Y(10*16),
-    .REST0(((20*16))),
-    .REST1(((16*16))),
-    .REST2(((8*16))),
+    // .REST0(((10*16))),
+    // .REST1(((10*16))),
+    // .REST2(((8*16))),
+    .REST0(0),
+    .REST1(0),
+    .REST2(0),
     .PHASE_OFFSET(300)
   ) peripheral2(
-    p0x, p0y, p0m, p0vx, p0vy,
-    p1x, p1y, p1m, p1vx, p1vy,
-    cx, cy, cm, cvx, cvy,    
+    p0x, p0y, p0vx, p0vy,
+    p1x, p1y, p1vx, p1vy,
+    cx, cy, cvx, cvy,    
     data,
     clk,
     reset,
-    p2x, p2y, p2m, p2vx, p2vy
+    p2x, p2y, p2vx, p2vy
   );
 
   // counter to rate limit matrix updates
@@ -125,13 +143,16 @@ module physics(
         radius_check #(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
           c(xx, yy, (cx >> 4), (cy >> 4), valid[(((yy << 4) + xx) << 2) + 0]);
         // 8, 6
-        radius_check #(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0)
+        // radius_check #(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0)
+        radius_check #(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
           p0(xx, yy, (p0x >> 4), (p0y >> 4), valid[(((yy << 4) + xx) << 2) + 1]);
         // 6, 10
-        radius_check #(1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+        // radius_check #(1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+        radius_check #(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
           p1(xx, yy, (p1x >> 4), (p1y >> 4), valid[(((yy << 4) + xx) << 2) + 2]);
         // 10, 10
-        radius_check #(0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0)
+        // radius_check #(0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0)
+        radius_check #(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
           p2(xx, yy, (p2x >> 4), (p2y >> 4), valid[(((yy << 4) + xx) << 2) + 3]);
       end
     end

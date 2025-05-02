@@ -27,7 +27,7 @@ module ChipInterface (
 	input wire clk;
 	reg reset;
 	wire locked;
-	reg clk10;
+	wire clk10;
 	wire [95:0] data;
 	wire [255:0] matrix;
 	ws2812 led_module(
@@ -37,12 +37,11 @@ module ChipInterface (
 		.matrix(matrix),
 		.o_out(led_data)
 	);
-	reg toggle;
-	always @(posedge clk) begin
-		toggle <= ~toggle;
-		if (toggle)
-			clk10 <= ~clk10;
-	end
+	pll spc_clock(
+		.clk(clk),
+		.clk10(clk10),
+		.locked(locked)
+	);
 	imu_multi sensor(
 		.reset(reset),
 		.SDO(SDO),
@@ -65,6 +64,6 @@ module ChipInterface (
 	always @(*) begin
 		led[7:4] = data[47:44];
 		led[3:0] = data[31:28];
-		reset = rst;
+		reset = ~locked || rst;
 	end
 endmodule

@@ -8,6 +8,9 @@
 // in 16x16 grid
 module particle
   #(parameter shortint MASS=8,
+    parameter shortint M0=8,
+    parameter shortint M1=8,
+    parameter shortint M2=8,
     parameter shortint INIT_X=8*16,
     parameter shortint INIT_Y=8*16,
     parameter shortint REST0=4*16, // rest lengths for each other particle
@@ -16,13 +19,13 @@ module particle
     parameter shortint PHASE_OFFSET=0)
 (
   // handles influence from 3 particles
-  input shortint x0, y0, m0, vx0, vy0, 
-  input shortint x1, y1, m1, vx1, vy1, 
-  input shortint x2, y2, m2, vx2, vy2, 
+  input shortint x0, y0, vx0, vy0, 
+  input shortint x1, y1, vx1, vy1, 
+  input shortint x2, y2, vx2, vy2, 
   input data_t data,
   input logic clk,
   input logic reset,
-  output shortint x, y, m, vel_x, vel_y
+  output shortint x, y, vel_x, vel_y
 );
 
   // simulation parameters
@@ -42,6 +45,7 @@ module particle
 
   // temporary variables used during updating
   shortint dx0, dy0, dx1, dy1, dx2, dy2; // deltas
+  shortint dx0_2, dy0_2, dx1_2, dy1_2, dx2_2, dy2_2; // deltas squared
   shortint d0, d1, d2; // distances
   shortint displace0, displace1, displace2;
   shortint rel_vel_x0, rel_vel_x1, rel_vel_x2; // relative velocity
@@ -65,7 +69,6 @@ module particle
     // outputs
     x = px;
     y = py;
-    m = MASS;
     vel_x = vx;
     vel_y = vy;
   end
@@ -73,11 +76,11 @@ module particle
   // mux for multa, multb
   always_comb begin
     case (idx)
-      PHASE_OFFSET + 9: begin
+      PHASE_OFFSET + 11: begin
         multa = px - x0;
         multb = px - x0;
       end
-      PHASE_OFFSET + 10: begin
+      PHASE_OFFSET + 12: begin
         multa = py - y0;
         multb = py - y0;
       end
@@ -90,18 +93,18 @@ module particle
         multb = dy0;
       end
       PHASE_OFFSET + 20: begin
-        multa = (displace0) + damp0;
-        multb = dx0;
+        multa = (displace0 >>> (6 - $clog2(M0))) + damp0;
+        multb = dx0 >>> 2;
       end
       PHASE_OFFSET + 21: begin
-        multa = (displace0) + damp0;
-        multb = dy0;
+        multa = (displace0 >>> (6 - $clog2(M0))) + damp0;
+        multb = dy0 >>> 2;
       end
-      PHASE_OFFSET + 22: begin
+      PHASE_OFFSET + 24: begin
         multa = px - x1;
         multb = px - x1;
       end
-      PHASE_OFFSET + 23: begin
+      PHASE_OFFSET + 25: begin
         multa = py - y1;
         multb = py - y1;
       end
@@ -113,13 +116,13 @@ module particle
         multa = rel_vel_y1;
         multb = dy1;
       end
-      PHASE_OFFSET + 33: begin
-        multa = (displace1) + damp1;
-        multb = dx1;
+      PHASE_OFFSET + 37: begin
+        multa = (displace1 >>> (6 - $clog2(M1))) + damp1;
+        multb = dx1 >>> 2;
       end
-      PHASE_OFFSET + 34: begin
-        multa = (displace1) + damp1;
-        multb = dy1;
+      PHASE_OFFSET + 38: begin
+        multa = (displace1 >>> (6 - $clog2(M1))) + damp1;
+        multb = dy1 >>> 2;
       end
       PHASE_OFFSET + 35: begin
         multa = px - x2;
@@ -138,12 +141,12 @@ module particle
         multb = dy2;
       end
       PHASE_OFFSET + 46: begin
-        multa = (displace2) + damp2;
-        multb = dx2;
+        multa = (displace2 >>> (6 - $clog2(M2))) + damp2;
+        multb = dx2 >>> 2;
       end
       PHASE_OFFSET + 47: begin
-        multa = (displace2) + damp2;
-        multb = dy2;
+        multa = (displace2 >>> (6 - $clog2(M2))) + damp2;
+        multb = dy2 >>> 2;
       end
       default: begin
         multa = 0;
@@ -181,10 +184,10 @@ module particle
         // Phases 1-8: parameter update
         //////////////////////////////
         PHASE_OFFSET + 1: begin
-          px <= (px << 1) - px_old + ax;
+          px <= (px << 1) - px_old + (ax >>> 2);
         end
         PHASE_OFFSET + 2: begin
-          py <= (py << 1) - py_old + ay;
+          py <= (py << 1) - py_old + (ay >>> 2);
         end
         PHASE_OFFSET + 3: begin
           ax <= 0;
@@ -209,31 +212,27 @@ module particle
         // Phases 9-11: distance mass 0
         //////////////////////////////
         PHASE_OFFSET + 9: begin
-          dx0 <= (multa * multb) >>> 4; // dx^2
+          dx0 <= px - x0;
         end
         PHASE_OFFSET + 10: begin
-          dy0 <= (multa * multb) >>> 4; // dy^2
+          dy0 <= py - y0;
         end
         PHASE_OFFSET + 11: begin
-          // euclidean distance squared
-          d0 <= dx0 + dy0; // no sqrt :(
+          dx0_2 <= (multa * multb) >>> 4; // dx^2
         end
         //////////////////////////////
         // Phases 12-16: parameter update
         //////////////////////////////
         PHASE_OFFSET + 12: begin
-          if (d0 > 0) begin
-            dx0 <= dx0 / d0;
-          end
+          dy0_2 <= (multa * multb) >>> 4; // dy^2
         end
         PHASE_OFFSET + 13: begin
-          if (d0 > 0) begin
-            dy0 <= dy0 / d0;
-          end
+          // euclidean distance squared
+          d0 <= dx0_2 + dy0_2; // no sqrt :(
         end
         PHASE_OFFSET + 14: begin
           if (d0 > 0) begin
-            displace0 <= d0 - REST0;
+            displace0 <= REST0 - d0;
           end
         end
         PHASE_OFFSET + 15: begin
@@ -266,12 +265,12 @@ module particle
         end
         PHASE_OFFSET + 20: begin
           if (d0 > 0) begin
-            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace0) + damp0) * dx0)
+            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace0 << 1) + damp0) * dx0)
           end
         end
         PHASE_OFFSET + 21: begin
           if (d0 > 0) begin
-            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace0) + damp0) * dy0)
+            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace0 << 1) + damp0) * dy0)
           end
         end
 
@@ -279,27 +278,23 @@ module particle
         // Phases 22-24: distance mass 1
         //////////////////////////////
         PHASE_OFFSET + 22: begin
-          dx1 <= (multa * multb) >>> 4; // dx^2
+          dx1 <= px - x1;
         end
         PHASE_OFFSET + 23: begin
-          dy1 <= (multa * multb) >>> 4; // dy^2
+          dy1 <= py - y1;
         end
         PHASE_OFFSET + 24: begin
-          // euclidean distance squared
-          d1 <= dx1 + dy1; // no sqrt :(
+          dx1_2 <= (multa * multb) >>> 4; // dx^2
         end
         //////////////////////////////
         // Phases 25-29: parameter update
         //////////////////////////////
         PHASE_OFFSET + 25: begin
-          if (d1 > 0) begin
-            dx1 <= dx1 / d1;
-          end
+          dy1_2 <= (multa * multb) >>> 4; // dy^2
         end
         PHASE_OFFSET + 26: begin
-          if (d1 > 0) begin
-            dy1 <= dy1 / d1;
-          end
+          // euclidean distance squared
+          d1 <= dx1_2 + dy1_2; // no sqrt :(
         end
         PHASE_OFFSET + 27: begin
           if (d1 > 0) begin
@@ -336,12 +331,12 @@ module particle
         end
         PHASE_OFFSET + 33: begin
           if (d1 > 0) begin
-            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace1) + damp1) * dx1);
+            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace1 << 1) + damp1) * dx1);
           end
         end
         PHASE_OFFSET + 34: begin
           if (d1 > 0) begin
-            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace1) + damp1) * dy1);
+            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace1 << 1) + damp1) * dy1);
           end
         end
 
@@ -349,27 +344,23 @@ module particle
         // Phases 35-37: distance mass 2
         //////////////////////////////
         PHASE_OFFSET + 35: begin
-          dx2 <= (multa * multb) >>> 4; // dx^2
+          dx2 <= px - x2;
         end
         PHASE_OFFSET + 36: begin
-          dy2 <= (multa * multb) >>> 4; // dy^2
+          dy2 <= py - y2;
         end
         PHASE_OFFSET + 37: begin
-          // euclidean distance squared
-          d2 <= dx2 + dy2; // no sqrt :(
+          dx2_2 <= (multa * multb) >>> 4; // dx^2
         end
         //////////////////////////////
         // Phases 38-42: parameter update
         //////////////////////////////
         PHASE_OFFSET + 38: begin
-          if (d2 > 0) begin
-            dx2 <= dx2 / d2;
-          end
+          dy2_2 <= (multa * multb) >>> 4; // dy^2
         end
         PHASE_OFFSET + 39: begin
-          if (d2 > 0) begin
-            dy2 <= dy2 / d2;
-          end
+          // euclidean distance squared
+          d2 <= dx2_2 + dy2_2; // no sqrt :(
         end
         PHASE_OFFSET + 40: begin
           if (d2 > 0) begin
@@ -406,12 +397,12 @@ module particle
         end
         PHASE_OFFSET + 46: begin
           if (d2 > 0) begin
-            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace2) + damp2) * dx2)
+            ax <= ax + ((multa * multb) >>> 4); // ax + (((displace2 << 1) + damp2) * dx2)
           end
         end
         PHASE_OFFSET + 47: begin
           if (d2 > 0) begin
-            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace2) + damp2) * dy2)
+            ay <= ay + ((multa * multb) >>> 4); // ay + (((displace2 << 1) + damp2) * dy2)
           end
         end
 
@@ -458,13 +449,13 @@ module center
     parameter shortint PHASE_OFFSET=0)
 (
   // other 3 particles info
-  input shortint x0, y0, m0, vx0, vy0, 
-  input shortint x1, y1, m1, vx1, vy1, 
-  input shortint x2, y2, m2, vx2, vy2, 
+  input shortint x0, y0, vx0, vy0, 
+  input shortint x1, y1, vx1, vy1, 
+  input shortint x2, y2, vx2, vy2, 
   input data_t data,
   input logic clk,
   input logic reset,
-  output shortint x, y, m, vel_x, vel_y
+  output shortint x, y, vel_x, vel_y
 );
 
   // simulation parameters
@@ -482,19 +473,6 @@ module center
   shortint force_x, force_y;
   shortint imu_x, imu_y;
 
-  // temporary variables used during updating
-  shortint dx0, dy0, dx1, dy1, dx2, dy2; // deltas
-  shortint d0, d1, d2; // distances
-  shortint displace0, displace1, displace2;
-  shortint rel_vel_x0, rel_vel_x1, rel_vel_x2; // relative velocity
-  shortint rel_vel_y0, rel_vel_y1, rel_vel_y2; // for dampening
-  shortint dampx0, dampx1, dampx2; // x component of dampening
-  shortint dampy0, dampy1, dampy2; // y component of dampening
-  shortint damp0, damp1, damp2; // dampened amount
-
-  // variables for time division multiplexing multiplication
-  shortint multa, multb;
-
   // counter for pipelining stages
   parameter TOTAL_CYCLES = 300_000;
   // parameter TOTAL_CYCLES = 500;
@@ -507,13 +485,12 @@ module center
     // outputs
     x = px;
     y = py;
-    m = MASS;
     vel_x = vx;
     vel_y = vy;
 
     // inputs
-    imu_x = shortint'(data.x) >>> 7;
-    imu_y = shortint'(data.y) >>> 7;
+    imu_x = shortint'(data.x);
+    imu_y = shortint'(data.y);
   end
 
   // sequential updates
@@ -545,12 +522,10 @@ module center
         // Phases 1-8: parameter update
         //////////////////////////////
         PHASE_OFFSET + 1: begin
-          // ax <= (MASS == 16) ? (force_x >>> 4) : (force_x >>> 3); // force_x / MASS
-          ax <= force_x >>> $clog2(MASS);
+          ax <= force_x >>> 8;
         end
         PHASE_OFFSET + 2: begin
-          // ay <= (MASS == 16) ? (force_y >>> 4) : (force_y >>> 3); // force_y / MASS
-          ay <= force_y >>> $clog2(MASS);
+          ay <= force_y >>> 8;
         end
         PHASE_OFFSET + 3: begin
           px <= (px << 1) - px_old + ax;
